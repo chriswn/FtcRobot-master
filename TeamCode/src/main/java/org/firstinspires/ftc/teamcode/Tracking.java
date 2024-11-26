@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 public class Tracking {
@@ -13,7 +12,6 @@ public class Tracking {
     // Constructor to initialize motors and telemetry
     public Tracking(HardwareMap hardwareMap, Telemetry telemetry) {
         this.telemetry = telemetry;
-        // Initialize motors (assuming motor names are "left_drive" and "right_drive")
         leftMotor = hardwareMap.get(DcMotor.class, "left_drive");
         rightMotor = hardwareMap.get(DcMotor.class, "right_drive");
 
@@ -25,7 +23,6 @@ public class Tracking {
     // Method to move towards the object based on its distance
     public void moveTowardsObject(double distance) {
         double speed = calculateSpeedBasedOnDistance(distance);
-        // Drive forward at the calculated speed
         leftMotor.setPower(speed);
         rightMotor.setPower(speed);
 
@@ -37,7 +34,7 @@ public class Tracking {
     // Method to rotate the robot when no object is detected
     public void searchForObject() {
         // Example: Rotate the robot to search for an object
-        rotateRobot(0.5); // Rotate at 50% speed
+        rotateRobot(0.5);  // Rotate at 50% speed
     }
 
     // Method to rotate the robot

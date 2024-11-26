@@ -3,31 +3,39 @@ package org.firstinspires.ftc.teamcode;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import org.opencv.core.*;
+import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
+
 import java.util.List;
 
-@Autonomous(name="IntoTheDeepWithObjectDetection")
+@Autonomous(name = "IntoTheDeepWithObjectDetection")
 public class IntoTheDeepWithObjectDetection extends LinearOpMode {
 
     private RobotHardware robot;
     private ObjectDetection objectDetection;
-    private AprilTagDetection aprilTagDetection;
+    private ArmMovement armMovement;
+    private Apriltaguse apriltaguse;
+
+    // Camera variables
+    private static final double IMAGE_CENTER_X = 320; // Camera resolution width / 2
+    private static final double TAG_THRESHOLD = 50; // Threshold to move the robot based on the tag's position
+    private static final double DISTANCE_THRESHOLD = 12; // Distance from the tag to move forward or stop
 
     @Override
     public void runOpMode() {
-        // Initialize hardware and vision
+        // Initialize hardware and vision components
         robot = new RobotHardware(hardwareMap, telemetry);
         objectDetection = new ObjectDetection(hardwareMap, telemetry);
-        aprilTagDetection = new AprilTagDetection(); // Initialize the AprilTagDetection class
+        armMovement = new ArmMovement(hardwareMap, telemetry);
+        apriltaguse = new Apriltaguse(hardwareMap, telemetry); // Correct instantiation
 
         // Initialize FtcDashboard for real-time monitoring
         FtcDashboard dashboard = FtcDashboard.getInstance();
 
-        // Start streaming camera feed to dashboard
+        // Start Vision Portal stream
         dashboard.startCameraStream(objectDetection.getCamera(), 30); // Stream the camera from ObjectDetection
 
-        // Initialize AprilTag detection
-        aprilTagDetection.init(hardwareMap); // Initialize the AprilTagDetection instance
+        // Initialize AprilTag detection (Vision Portal)
+        apriltaguse.initializeVision(hardwareMap); // Initialize the AprilTagDetection instance
 
         // Wait for the start button to be pressed
         waitForStart();
@@ -35,11 +43,11 @@ public class IntoTheDeepWithObjectDetection extends LinearOpMode {
         if (opModeIsActive()) {
             // Perform object detection
             while (opModeIsActive()) {
-                // Object detection pipeline is running automatically; get the data directly
-                double objectCentroidX = objectDetection.objectDetectionPipeline.getCentroidX();
-                double objectCentroidY = objectDetection.objectDetectionPipeline.getCentroidY();
-                double objectDistance = objectDetection.objectDetectionPipeline.getDistance();
-                double objectWidth = objectDetection.objectDetectionPipeline.getWidth();
+                // Get data from object detection pipeline
+                double objectCentroidX = objectDetection.getPipeline().getCentroidX();
+                double objectCentroidY = objectDetection.getPipeline().getCentroidY();
+                double objectDistance = objectDetection.getPipeline().getDistance();
+                double objectWidth = objectDetection.getPipeline().getWidth();
 
                 // Display object detection info in telemetry
                 telemetry.addData("Object Centroid X", objectCentroidX);
@@ -49,14 +57,14 @@ public class IntoTheDeepWithObjectDetection extends LinearOpMode {
                 telemetry.update();
 
                 // Behavior based on object distance
-                if (objectDistance < 24) {
+                if (objectDistance < DISTANCE_THRESHOLD) {
                     telemetry.addData("Status", "Object too close! Stopping.");
                     telemetry.update();
                     robot.stopMotors(); // Stop moving if too close
-                    sleep(1000); // Wait for a second for the servo to open (if needed)
+                    sleep(1000); // Wait for a second
                     break; // End loop if object is too close
                 } else {
-                    // Otherwise, move forward towards the object
+                    // Move forward towards the object
                     telemetry.addData("Status", "Moving forward.");
                     telemetry.update();
                     robot.setMotorPower(0.5, 0.5); // Move forward at 50% power
@@ -73,59 +81,65 @@ public class IntoTheDeepWithObjectDetection extends LinearOpMode {
                 sleep(100); // Adjust sleep time as needed
             }
 
-            // After object detection is done, start AprilTag detection
-            aprilTagDetection.processDetectedTags(); // Process the tags detected by AprilTagDetection
+            // Once the object is detected, move the arm to interact with the object
+            robot.closeGripper(); // Close the gripper to pick up the object
+            armMovement.move(10); // Example distance in inches to move the arm
 
-            // Now get the detected tags from AprilTagDetection
-            List<AprilTagDetection.TagDetection> aprilTags = aprilTagDetection.pipeline.getDetectedTags();
+            // After moving, release the object into the basket (drop it)
+            robot.openGripper(); // Open the gripper to drop the object
 
-            if (aprilTags != null && !aprilTags.isEmpty()) {
-                // Process the first detected AprilTag
-                AprilTagDetection.TagDetection targetTag = aprilTags.get(0);
-                telemetry.addData("AprilTag Detected", targetTag.getTagId());
-                telemetry.update();
+            // After object detection and arm movement, start AprilTag detection to score
+            processAprilTags();
+        }
+    }
 
-                // Process the detected tag's position and move towards it
-                moveTowardsAprilTag(targetTag);
-            } else {
-                telemetry.addData("AprilTag Status", "No AprilTags detected");
-                telemetry.update();
-            }
+    // Process AprilTags once the object detection loop ends
+    private void processAprilTags() {
+        // Get detected AprilTags
+        List<AprilTagDetection> aprilTags = apriltaguse.getDetectedTags(); // Use the new method to get detected tags
+
+        if (aprilTags != null && !aprilTags.isEmpty()) {
+            // Process the first detected AprilTag
+            AprilTagDetection targetTag = aprilTags.get(0); // Get the first detected tag
+            telemetry.addData("AprilTag Detected", targetTag.id);
+            telemetry.update();
+
+            // Process the detected tag's position and move towards it
+            moveTowardsAprilTag(targetTag);
+        } else {
+            telemetry.addData("AprilTag Status", "No AprilTags detected");
+            telemetry.update();
         }
     }
 
     // Method to move robot towards the detected AprilTag
-    private void moveTowardsAprilTag(AprilTagDetection.TagDetection targetTag) {
-        // Get the corner coordinates of the AprilTag
-        Point[] corners = targetTag.getCorners();
-        Point topLeft = corners[0];
-        Point topRight = corners[1];
-        Point bottomLeft = corners[2];
-        Point bottomRight = corners[3];
+    private void moveTowardsAprilTag(AprilTagDetection targetTag) {
+        // Assuming the tag pose contains translation and rotation (check your library for correct usage)
+        double tagX = targetTag.ftcPose.x;  // Tag's position in X
+        double tagY = targetTag.ftcPose.y;  // Tag's position in Y
+        double tagZ = targetTag.ftcPose.z;  // Tag's position in Z
 
-        // Calculate the center of the tag
-        double tagCenterX = (topLeft.x + topRight.x + bottomLeft.x + bottomRight.x) / 4;
-        double tagCenterY = (topLeft.y + topRight.y + bottomLeft.y + bottomRight.y) / 4;
-
-        // Calculate distance and direction to the AprilTag
-        double distanceToTag = aprilTagDetection.calculateDistance(topLeft, bottomRight);
-        double imageCenterX = 320; // Assuming camera resolution is 640x480
-        double imageCenterY = 240;
-
-        // Determine if the tag is to the left or right, and move accordingly
-        if (tagCenterX < imageCenterX - 50) {
-            robot.setMotorPower(-0.3, 0.3); // Turn left (if tag is left)
-            telemetry.addData("Turning", "Left");
-        } else if (tagCenterX > imageCenterX + 50) {
-            robot.setMotorPower(0.3, -0.3); // Turn right (if tag is right)
-            telemetry.addData("Turning", "Right");
+        // Adjust robot's movement based on tag's position
+        if (Math.abs(tagX - IMAGE_CENTER_X) > TAG_THRESHOLD) {
+            if (tagX < IMAGE_CENTER_X) {
+                robot.setMotorPower(-0.3, 0.3);  // Turn left
+                telemetry.addData("Turning", "Left");
+            } else {
+                robot.setMotorPower(0.3, -0.3);  // Turn right
+                telemetry.addData("Turning", "Right");
+            }
         } else {
-            robot.setMotorPower(0.5, 0.5); // Move forward (if tag is centered)
+            // Move forward towards the tag if it's aligned
+            double moveSpeed = 0.5;
+            if (tagZ > DISTANCE_THRESHOLD) {
+                moveSpeed = 0.8;  // Speed up to approach the tag
+            }
+            robot.setMotorPower(moveSpeed, moveSpeed);  // Move forward
             telemetry.addData("Moving", "Forward");
         }
 
-        // If the tag is detected within a certain distance, stop
-        if (distanceToTag < 10) {
+        // If close enough to the tag, stop the robot
+        if (tagZ < 10) {
             robot.stopMotors();
             telemetry.addData("Arrived", "At the AprilTag!");
             telemetry.update();
