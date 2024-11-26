@@ -1,0 +1,19 @@
+[core]
+	repositoryformatversion = 0
+	filemode = false
+	bare = false
+	logallrefupdates = true
+	symlinks = false
+	ignorecase = true
+[remote "origin"]
+	url = https://github.com/chriswn/FtcRobot-masterrealscrap.git
+	fetch = +refs/heads/*:refs/remotes/origin/*
+[remote "github"]
+	url = https://github.com/chriswn/FtcRobot-master.git
+	fetch = +refs/heads/*:refs/remotes/github/*
+[remote "githUB"]
+	url = https://github.com/chriswn/FtcRobot-master2.git
+	fetch = +refs/heads/*:refs/remotes/githUB/*
+[remote "real"]
+	url = git@github.com:/chriswn/FtcRobot-masterrealscrap.git
+	fetch = +refs/heads/*:refs/remotes/real/*
