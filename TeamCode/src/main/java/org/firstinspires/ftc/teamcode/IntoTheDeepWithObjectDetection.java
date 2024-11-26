@@ -106,7 +106,7 @@ public class IntoTheDeepWithObjectDetection extends LinearOpMode {
         if (aprilTags != null && !aprilTags.isEmpty()) {
             // Process the first detected AprilTag
             AprilTagDetection targetTag = aprilTags.get(0); // Get the first detected tag
-            telemetry.addData("AprilTag Detected", targetTag.id);
+            telemetry.addData("AprilTag Detected", "ID: " + targetTag.id);
             telemetry.update();
 
             // Process the detected tag's position and move towards it

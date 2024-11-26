@@ -1,3 +1,4 @@
+
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -35,7 +36,8 @@ public class Apriltaguse {
             visionPortal = new VisionPortal.Builder()
                     .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))  // Ensure the camera name is correct
                     .addProcessor(aprilTagProcessor)
-                    .setLiveView(false) // Disable live view to avoid conflicts
+                    // Set live view container ID to 0 to disable live view (for newer SDKs)
+                    .setLiveViewContainerId(0)
                     .build();
 
             // Define known corner tags (adjust IDs based on your game setup)

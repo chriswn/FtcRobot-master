@@ -10,14 +10,15 @@ import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvPipeline;
+import com.acmerobotics.dashboard.FtcDashboard;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ObjectDetection {
 
-    public static final int CAMERA_WIDTH = 1920;
-    public static final int CAMERA_HEIGHT = 1080;
+    public static final int CAMERA_WIDTH = 640;
+    public static final int CAMERA_HEIGHT = 480;
     public static final double OBJECT_WIDTH_IN_REAL_WORLD_UNITS = 3.5; // inches
 
     private OpenCvCamera camera;
@@ -47,14 +48,19 @@ public class ObjectDetection {
         camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             @Override
             public void onOpened() {
-                // Optimize viewport rendering to avoid live view conflicts
-                camera.setViewportRenderingPolicy(OpenCvCamera.ViewportRenderingPolicy.OPTIMIZE_VIEW);
+                // Camera is successfully opened, start streaming
+                telemetry.addData("Camera", "Opened successfully");
+                telemetry.update();
+                camera.setViewportRenderingPolicy(OpenCvCamera.ViewportRenderingPolicy.OPTIMIZE_VIEW);  // Enables live view while processing frames
                 camera.startStreaming(CAMERA_WIDTH, CAMERA_HEIGHT, OpenCvCameraRotation.UPRIGHT);
+
+                // Start the camera stream to the dashboard
+                FtcDashboard.getInstance().startCameraStream(camera, 30);
             }
 
             @Override
             public void onError(int errorCode) {
-                telemetry.addData("Camera Error", errorCode);
+                telemetry.addData("Camera Error", "Error code: " + errorCode);
                 telemetry.update();
             }
         });
