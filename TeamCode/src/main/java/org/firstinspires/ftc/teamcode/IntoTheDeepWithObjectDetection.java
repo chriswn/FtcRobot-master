@@ -82,11 +82,11 @@ public class IntoTheDeepWithObjectDetection extends LinearOpMode {
             }
 
             // Once the object is detected, move the arm to interact with the object
-            robot.closeGripper(); // Close the gripper to pick up the object
+            armMovement.closeGripper(); // Close the gripper to pick up the object
             armMovement.move(10); // Example distance in inches to move the arm
 
             // After moving, release the object into the basket (drop it)
-            robot.openGripper(); // Open the gripper to drop the object
+            armMovement.openGripper(); // Open the gripper to drop the object
 
             // After object detection and arm movement, start AprilTag detection to score
             processAprilTags();

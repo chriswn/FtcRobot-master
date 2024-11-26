@@ -106,4 +106,3 @@ public class ArmMovement {
         shoulder.setPower(0);
     }
 }
-

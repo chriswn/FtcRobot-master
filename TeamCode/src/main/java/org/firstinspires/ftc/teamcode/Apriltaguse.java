@@ -14,63 +14,73 @@ public class Apriltaguse {
 
     private VisionPortal visionPortal;
     private AprilTagProcessor aprilTagProcessor;
-    private HashMap<Integer, String> arenaCorners = new HashMap<>();
-    private Telemetry telemetry;
+    private final HashMap<Integer, String> arenaCorners = new HashMap<>();
+    private final Telemetry telemetry;
 
-    // Constructor accepts HardwareMap and Telemetry
+    // Constructor
     public Apriltaguse(HardwareMap hardwareMap, Telemetry telemetry) {
         this.telemetry = telemetry;
         initializeVision(hardwareMap);
     }
-    // Add this method to the Apriltaguse class to get the list of detected tags
+
+    // Initialize the vision pipeline
+    private void initializeVision(HardwareMap hardwareMap) {
+        try {
+            aprilTagProcessor = new AprilTagProcessor.Builder().build();
+            visionPortal = new VisionPortal.Builder()
+                    .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1")) // Ensure "Webcam 1" matches the config
+                    .addProcessor(aprilTagProcessor)
+                    .build();
+
+            // Define corner tags (adjust IDs based on your game setup)
+            arenaCorners.put(11, "Top Left");
+            arenaCorners.put(12, "Top Right");
+            arenaCorners.put(13, "Bottom Left");
+            arenaCorners.put(14, "Bottom Right");
+
+            telemetry.addLine("Vision initialized successfully.");
+        } catch (Exception e) {
+            telemetry.addLine("Error initializing vision: " + e.getMessage());
+        }
+        telemetry.update();
+    }
+
+    // Retrieve the list of detected tags
     public List<AprilTagDetection> getDetectedTags() {
         return aprilTagProcessor.getDetections();
     }
 
-    // Initialize the vision processing pipeline
-    void initializeVision(HardwareMap hardwareMap) {
-        aprilTagProcessor = new AprilTagProcessor.Builder().build();
-        visionPortal = new VisionPortal.Builder()
-                .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))  // Ensure the camera name is correct
-                .addProcessor(aprilTagProcessor)
-                .build();
-
-        // Define known corner tags
-        arenaCorners.put(1, "Top Left");
-        arenaCorners.put(2, "Top Right");
-        arenaCorners.put(3, "Bottom Left");
-        arenaCorners.put(4, "Bottom Right");
-    }
-
-    // Find arena corners based on detected tags
+    // Process detected tags to identify arena corners
     public void findArenaCorners() {
-        List<AprilTagDetection> detections = aprilTagProcessor.getDetections();
-
-        // If no tags are detected, just show a message and stop processing for now
-        if (detections.isEmpty()) {
-            telemetry.addData("Tags Detected", 0);
+        if (visionPortal == null || aprilTagProcessor == null) {
+            telemetry.addLine("Vision system not initialized.");
             telemetry.update();
             return;
         }
 
-        // Process each detected tag
+        List<AprilTagDetection> detections = aprilTagProcessor.getDetections();
+
+        if (detections.isEmpty()) {
+            telemetry.addLine("No tags detected.");
+            telemetry.update();
+            return;
+        }
+
         for (AprilTagDetection tag : detections) {
-            // Check if the detected tag ID corresponds to one of the known corners
             String cornerName = arenaCorners.get(tag.id);
             if (cornerName != null) {
-                displayTagInfo(tag, cornerName);  // Display tag info if it's a corner tag
+                displayTagInfo(tag, cornerName);
             } else {
-                telemetry.addLine(String.format("Tag ID: %d (Not a corner tag)", tag.id));
-                telemetry.update();
+                telemetry.addLine(String.format("Tag ID: %d detected, not a known corner.", tag.id));
             }
         }
+        telemetry.update();
     }
 
-    // Display tag information (ID, position, rotation)
+    // Display tag information in telemetry
     private void displayTagInfo(AprilTagDetection tag, String cornerName) {
         telemetry.addLine(String.format("Tag ID: %d (%s)", tag.id, cornerName));
 
-        // If pose data is available, display it
         if (tag.ftcPose != null) {
             telemetry.addLine(String.format("Position (XYZ): %.1f, %.1f, %.1f inches",
                     tag.ftcPose.x, tag.ftcPose.y, tag.ftcPose.z));
@@ -80,17 +90,16 @@ public class Apriltaguse {
             telemetry.addLine(String.format("Bearing: %.1f degrees", tag.ftcPose.bearing));
             telemetry.addLine(String.format("Elevation: %.1f degrees", tag.ftcPose.elevation));
         } else {
-            telemetry.addLine("Pose data not available.");
+            telemetry.addLine("Pose data unavailable for this tag.");
         }
-        telemetry.update();
     }
 
-    // Close vision processing portal
+    // Safely close the vision portal
     public void close() {
         if (visionPortal != null) {
-            visionPortal.close();  // Close VisionPortal when done
+            visionPortal.close();
+            telemetry.addLine("Vision portal closed.");
+            telemetry.update();
         }
     }
 }
-
-

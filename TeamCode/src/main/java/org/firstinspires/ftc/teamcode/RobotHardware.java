@@ -2,23 +2,16 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 public class RobotHardware {
 
-    // Declare motors
+    // Declare drivetrain motors
     private DcMotor backLeftMotor = null;
     private DcMotor frontLeftMotor = null;
     private DcMotor backRightMotor = null;
     private DcMotor frontRightMotor = null;
-    private DcMotor shoulder = null; // Arm shoulder motor
-    private DcMotor forearm = null; // Arm forearm motor
-
-    // Declare servos for the gripper
-    private Servo leftClaw;
-    private Servo rightClaw;
 
     // Constants
     private static final double TICKS_PER_REVOLUTION = 560.0;
@@ -26,14 +19,12 @@ public class RobotHardware {
     private static final double MOTOR_POWER = 0.5; // Default motor power
 
     private Telemetry telemetry;
-
     private double wheelCircumference; // Calculate once and reuse
 
     // Constructor to initialize hardware
     public RobotHardware(HardwareMap hardwareMap, Telemetry telemetry) {
         this.telemetry = telemetry;
         initializeMotors(hardwareMap);
-        initializeServos(hardwareMap); // Initialize servos here
         wheelCircumference = Math.PI * WHEEL_DIAMETER; // Calculate wheel circumference once
     }
 
@@ -44,24 +35,11 @@ public class RobotHardware {
         backRightMotor = hardwareMap.get(DcMotor.class, "backRightMotor");
         frontRightMotor = hardwareMap.get(DcMotor.class, "frontRightMotor");
 
-        shoulder = hardwareMap.get(DcMotor.class, "shoulder");
-        forearm = hardwareMap.get(DcMotor.class, "forearm");
-
         // Set motor directions for proper drive behavior
         frontLeftMotor.setDirection(DcMotor.Direction.REVERSE);
         backLeftMotor.setDirection(DcMotor.Direction.REVERSE);
         frontRightMotor.setDirection(DcMotor.Direction.FORWARD);
         backRightMotor.setDirection(DcMotor.Direction.FORWARD);
-
-        // Set arm motor directions (check if reversed or not)
-        shoulder.setDirection(DcMotor.Direction.FORWARD);
-        forearm.setDirection(DcMotor.Direction.REVERSE);
-    }
-
-    // Initialize servos for the gripper
-    private void initializeServos(HardwareMap hardwareMap) {
-        leftClaw = hardwareMap.get(Servo.class, "leftClaw");
-        rightClaw = hardwareMap.get(Servo.class, "rightClaw");
     }
 
     // Move robot forward for a specific distance
@@ -113,29 +91,6 @@ public class RobotHardware {
         backRightMotor.setPower(power);
     }
 
-    // Method to move the arm (shoulder and forearm)
-    public void moveArm(double shoulderInches, double forearmInches) {
-        int shoulderTicks = calculateTicks(shoulderInches);
-        int forearmTicks = calculateTicks(forearmInches);
-
-        shoulder.setTargetPosition(shoulder.getCurrentPosition() + shoulderTicks);
-        forearm.setTargetPosition(forearm.getCurrentPosition() + forearmTicks);
-
-        shoulder.setPower(MOTOR_POWER);
-        forearm.setPower(MOTOR_POWER);
-
-        // Wait until the arm reaches the target positions
-        ElapsedTime runtime = new ElapsedTime();
-        while ((shoulder.isBusy() || forearm.isBusy()) && runtime.seconds() < 30) {
-            telemetry.addData("Shoulder", shoulder.getCurrentPosition());
-            telemetry.addData("Forearm", forearm.getCurrentPosition());
-            telemetry.update();
-        }
-
-        shoulder.setPower(0);
-        forearm.setPower(0);
-    }
-
     // Set power for both left and right motors
     public void setMotorPower(double leftPower, double rightPower) {
         frontLeftMotor.setPower(leftPower);
@@ -150,9 +105,6 @@ public class RobotHardware {
         backLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         frontRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         backRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-        shoulder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        forearm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
 
     // Check if any of the motors are still busy (moving towards target)
@@ -166,20 +118,5 @@ public class RobotHardware {
         backLeftMotor.setPower(0);
         frontRightMotor.setPower(0);
         backRightMotor.setPower(0);
-
-        shoulder.setPower(0);
-        forearm.setPower(0);
-    }
-
-    // Method to close the gripper (both servos)
-    public void closeGripper() {
-        leftClaw.setPosition(0.0);  // Adjust value as necessary for your specific gripper
-        rightClaw.setPosition(1.0); // Adjust value as necessary for your specific gripper
-    }
-
-    // Method to open the gripper (both servos)
-    public void openGripper() {
-        leftClaw.setPosition(1.0);  // Adjust value as necessary for your specific gripper
-        rightClaw.setPosition(0.0); // Adjust value as necessary for your specific gripper
     }
 }
