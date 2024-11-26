@@ -48,7 +48,7 @@ public class ArmMovement {
         runMotorsToPosition(MOTOR_POWER);
 
         ElapsedTime runtime = new ElapsedTime();
-        while (motorsBusy() && runtime.seconds() < 30) {
+        while ((forearm.isBusy() || shoulder.isBusy()) && runtime.seconds() < 30) {
             telemetry.addData("Forearm", forearm.getCurrentPosition());
             telemetry.addData("Shoulder", shoulder.getCurrentPosition());
             telemetry.update();
@@ -93,11 +93,6 @@ public class ArmMovement {
         shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         forearm.setPower(power);
         shoulder.setPower(power);
-    }
-
-    // Check if motors are still moving (busy)
-    private boolean motorsBusy() {
-        return forearm.isBusy() || shoulder.isBusy();
     }
 
     // Stop all motors

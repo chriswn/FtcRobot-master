@@ -23,31 +23,32 @@ public class Apriltaguse {
         initializeVision(hardwareMap);
     }
 
-    // Initialize the vision pipeline
+    // Retrieve the list of detected tags
+    public List<AprilTagDetection> getDetectedTags() {
+        return aprilTagProcessor.getDetections();
+    }
+
+    // Initialize the vision processing pipeline
     private void initializeVision(HardwareMap hardwareMap) {
         try {
             aprilTagProcessor = new AprilTagProcessor.Builder().build();
             visionPortal = new VisionPortal.Builder()
-                    .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1")) // Ensure "Webcam 1" matches the config
+                    .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))  // Ensure the camera name is correct
                     .addProcessor(aprilTagProcessor)
+                    .setLiveView(false) // Disable live view to avoid conflicts
                     .build();
 
-            // Define corner tags (adjust IDs based on your game setup)
+            // Define known corner tags (adjust IDs based on your game setup)
             arenaCorners.put(11, "Top Left");
             arenaCorners.put(12, "Top Right");
             arenaCorners.put(13, "Bottom Left");
             arenaCorners.put(14, "Bottom Right");
 
-            telemetry.addLine("Vision initialized successfully.");
+            telemetry.addLine("AprilTag Vision initialized successfully.");
         } catch (Exception e) {
-            telemetry.addLine("Error initializing vision: " + e.getMessage());
+            telemetry.addLine("Error initializing AprilTag vision: " + e.getMessage());
         }
         telemetry.update();
-    }
-
-    // Retrieve the list of detected tags
-    public List<AprilTagDetection> getDetectedTags() {
-        return aprilTagProcessor.getDetections();
     }
 
     // Process detected tags to identify arena corners

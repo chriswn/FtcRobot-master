@@ -25,14 +25,14 @@ public class ObjectDetection {
     private Telemetry telemetry;
 
     // Color thresholds (adjust based on your robot’s needs)
-    private Scalar lowerRed = new Scalar(0, 120, 70);
-    private Scalar upperRed = new Scalar(10, 255, 255);
-    private Scalar lowerBlue = new Scalar(100, 150, 0);
-    private Scalar upperBlue = new Scalar(140, 255, 255);
-    private Scalar lowerYellow = new Scalar(40, 150, 150);
-    private Scalar upperYellow = new Scalar(30, 255, 255);
+    private final Scalar lowerRed = new Scalar(0, 120, 70);
+    private final Scalar upperRed = new Scalar(10, 255, 255);
+    private final Scalar lowerBlue = new Scalar(100, 150, 0);
+    private final Scalar upperBlue = new Scalar(140, 255, 255);
+    private final Scalar lowerYellow = new Scalar(40, 150, 150);
+    private final Scalar upperYellow = new Scalar(30, 255, 255);
 
-    // Color thresholds (can be modified at runtime through telemetry)
+    // Constructor
     public ObjectDetection(HardwareMap hardwareMap, Telemetry telemetry) {
         this.telemetry = telemetry;
         this.pipeline = new ObjectDetectionPipeline();
@@ -43,17 +43,19 @@ public class ObjectDetection {
         camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"));
         camera.setPipeline(pipeline);
 
-        // Fixing AsyncCameraOpenListener issue
+        // Handle camera initialization asynchronously
         camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             @Override
             public void onOpened() {
-                // Set the live view container ID (for displaying camera feed)
+                // Optimize viewport rendering to avoid live view conflicts
+                camera.setViewportRenderingPolicy(OpenCvCamera.ViewportRenderingPolicy.OPTIMIZE_VIEW);
                 camera.startStreaming(CAMERA_WIDTH, CAMERA_HEIGHT, OpenCvCameraRotation.UPRIGHT);
             }
 
             @Override
             public void onError(int errorCode) {
                 telemetry.addData("Camera Error", errorCode);
+                telemetry.update();
             }
         });
     }
@@ -72,6 +74,7 @@ public class ObjectDetection {
     public class ObjectDetectionPipeline extends OpenCvPipeline {
 
         private double centroidX = 0, centroidY = 0, width = 0;
+        private int frameCount = 0; // For telemetry batching
 
         @Override
         public Mat processFrame(Mat input) {
@@ -101,6 +104,11 @@ public class ObjectDetection {
             List<MatOfPoint> contours = new ArrayList<>();
             Imgproc.findContours(blurredImage, contours, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
 
+            // Reset centroid and width for this frame
+            centroidX = 0;
+            centroidY = 0;
+            width = 0;
+
             // Process each contour
             for (MatOfPoint contour : contours) {
                 Rect boundingRect = Imgproc.boundingRect(contour);
@@ -108,22 +116,27 @@ public class ObjectDetection {
                 // Only process contours larger than 50x50 pixels
                 if (boundingRect.width > 50 && boundingRect.height > 50) {
                     Moments moments = Imgproc.moments(contour);
-                    centroidX = moments.get_m10() / moments.get_m00();
-                    centroidY = moments.get_m01() / moments.get_m00();
-                    width = boundingRect.width;
+                    if (moments.get_m00() != 0) {
+                        centroidX = moments.get_m10() / moments.get_m00();
+                        centroidY = moments.get_m01() / moments.get_m00();
+                        width = boundingRect.width;
 
-                    // Draw the bounding box and centroid on the image
-                    Imgproc.drawContours(input, contours, contours.indexOf(contour), new Scalar(0, 255, 0), 2);
-                    Imgproc.rectangle(input, boundingRect.tl(), boundingRect.br(), new Scalar(255, 0, 0), 2);
-                    Imgproc.putText(input, "X: " + (int) centroidX + " Y: " + (int) centroidY, new Point(centroidX, centroidY), Imgproc.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(0, 255, 255), 2);
+                        // Draw the bounding box and centroid on the image
+                        Imgproc.drawContours(input, contours, contours.indexOf(contour), new Scalar(0, 255, 0), 2);
+                        Imgproc.rectangle(input, boundingRect.tl(), boundingRect.br(), new Scalar(255, 0, 0), 2);
+                        Imgproc.putText(input, "X: " + (int) centroidX + " Y: " + (int) centroidY, new Point(centroidX, centroidY), Imgproc.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(0, 255, 255), 2);
+                    }
                 }
             }
 
-            // Optional: Send data to telemetry for debugging
-            telemetry.addData("Centroid X", centroidX);
-            telemetry.addData("Centroid Y", centroidY);
-            telemetry.addData("Object Width", width);
-            telemetry.update();
+            // Telemetry batching: Update telemetry every 10 frames
+            frameCount++;
+            if (frameCount % 10 == 0) {
+                telemetry.addData("Centroid X", centroidX);
+                telemetry.addData("Centroid Y", centroidY);
+                telemetry.addData("Object Width", width);
+                telemetry.update();
+            }
 
             return input;
         }

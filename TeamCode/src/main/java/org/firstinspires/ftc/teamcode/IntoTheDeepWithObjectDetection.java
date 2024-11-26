@@ -31,11 +31,8 @@ public class IntoTheDeepWithObjectDetection extends LinearOpMode {
         // Initialize FtcDashboard for real-time monitoring
         FtcDashboard dashboard = FtcDashboard.getInstance();
 
-        // Start Vision Portal stream
+        // Start Vision Portal stream (disabled live view, so this is safe)
         dashboard.startCameraStream(objectDetection.getCamera(), 30); // Stream the camera from ObjectDetection
-
-        // Initialize AprilTag detection (Vision Portal)
-        apriltaguse.initializeVision(hardwareMap); // Initialize the AprilTagDetection instance
 
         // Wait for the start button to be pressed
         waitForStart();
@@ -91,6 +88,14 @@ public class IntoTheDeepWithObjectDetection extends LinearOpMode {
             // After object detection and arm movement, start AprilTag detection to score
             processAprilTags();
         }
+
+        // Close vision systems
+        if (objectDetection.getCamera() != null) {
+            objectDetection.getCamera().closeCameraDevice();
+        }
+        if (apriltaguse != null) {
+            apriltaguse.close();
+        }
     }
 
     // Process AprilTags once the object detection loop ends
@@ -137,6 +142,8 @@ public class IntoTheDeepWithObjectDetection extends LinearOpMode {
             robot.setMotorPower(moveSpeed, moveSpeed);  // Move forward
             telemetry.addData("Moving", "Forward");
         }
+
+        telemetry.update();
 
         // If close enough to the tag, stop the robot
         if (tagZ < 10) {
