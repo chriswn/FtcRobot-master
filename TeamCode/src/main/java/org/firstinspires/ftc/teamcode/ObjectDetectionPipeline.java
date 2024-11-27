@@ -6,9 +6,6 @@ import org.opencv.core.Scalar;
 import org.opencv.imgproc.Moments;
 import org.openftc.easyopencv.OpenCvPipeline;
 
-import org.opencv.core.Mat;
-import org.opencv.core.Core;
-
 import java.util.List;
 import java.util.ArrayList;
 
@@ -34,6 +31,8 @@ public class ObjectDetectionPipeline extends OpenCvPipeline {
     public double cX = 0; // Centroid X-coordinate
     public double cY = 0; // Centroid Y-coordinate
     public double width = 0; // Detected object width
+
+    private String detectedColor = "None"; // To store detected color
 
     @Override
     public Mat processFrame(Mat input) {
@@ -77,6 +76,15 @@ public class ObjectDetectionPipeline extends OpenCvPipeline {
                 Imgproc.drawContours(input, contours, contours.indexOf(contour), new Scalar(0, 255, 0), 2);
                 Imgproc.rectangle(input, boundingRect.tl(), boundingRect.br(), new Scalar(255, 0, 0), 2);
                 Imgproc.putText(input, "X: " + (int) cX + " Y: " + (int) cY, new Point(cX, cY), Imgproc.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(0, 255, 255), 2);
+
+                // Detect which color was detected based on the thresholds
+                if (Core.countNonZero(thresholdRed) > 0) {
+                    detectedColor = "Red";
+                } else if (Core.countNonZero(thresholdBlue) > 0) {
+                    detectedColor = "Blue";
+                } else if (Core.countNonZero(thresholdYellow) > 0) {
+                    detectedColor = "Yellow";
+                }
             }
         }
 
@@ -103,5 +111,10 @@ public class ObjectDetectionPipeline extends OpenCvPipeline {
     // Get the width of the detected object
     public double getWidth() {
         return width;
+    }
+
+    // Getter for detectedColor
+    public String getDetectedColor() {
+        return detectedColor;
     }
 }

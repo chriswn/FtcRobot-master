@@ -31,7 +31,7 @@ public class IntoTheDeepWithObjectDetection extends LinearOpMode {
         // Initialize FtcDashboard for real-time monitoring
         FtcDashboard dashboard = FtcDashboard.getInstance();
 
-        // Start Vision Portal stream (disabled live view, so this is safe)
+        // Start the camera stream to the FTC Dashboard
         dashboard.startCameraStream(objectDetection.getCamera(), 30); // Stream the camera from ObjectDetection
 
         // Wait for the start button to be pressed
@@ -46,11 +46,15 @@ public class IntoTheDeepWithObjectDetection extends LinearOpMode {
                 double objectDistance = objectDetection.getPipeline().getDistance();
                 double objectWidth = objectDetection.getPipeline().getWidth();
 
+                // Get detected color
+                String detectedColor = objectDetection.getDetectedColor();
+
                 // Display object detection info in telemetry
                 telemetry.addData("Object Centroid X", objectCentroidX);
                 telemetry.addData("Object Centroid Y", objectCentroidY);
                 telemetry.addData("Object Distance (inches)", objectDistance);
                 telemetry.addData("Object Width (pixels)", objectWidth);
+                telemetry.addData("Detected Color", detectedColor); // Add detected color to telemetry
                 telemetry.update();
 
                 // Behavior based on object distance
@@ -96,6 +100,9 @@ public class IntoTheDeepWithObjectDetection extends LinearOpMode {
         if (apriltaguse != null) {
             apriltaguse.close();
         }
+
+        // Stop camera stream when OpMode ends
+        dashboard.stopCameraStream();
     }
 
     // Process AprilTags once the object detection loop ends
