@@ -29,8 +29,8 @@ public class AutoRedAdway extends LinearOpMode {
             moveToPosition(24);
 
             // Pick up the sample using the claw
-            armMovement.moveShoulderToPosition(-5); // Lower shoulder (chain gear) to reach the sample
-            armMovement.rotateForearmToAngle(90); // Rotate forearm (worm gear) for alignment
+            armMovement.moveShoulderToPosition(-5); // Lower shoulder to reach the sample
+            armMovement.rotateForearmToAngle(90); // Rotate forearm for alignment
             armMovement.closeGripper(); // Grab the sample
             sleep(1000);
 
@@ -41,7 +41,7 @@ public class AutoRedAdway extends LinearOpMode {
             // Deliver the sample to the lower basket
             turnRight(90); 
             moveToPosition(12);
-            armMovement.moveShoulderToPosition(25.75); // Raise shoulder (chain gear) to basket height
+            armMovement.moveShoulderToPosition(25.75); // Raise shoulder to basket height
             sleep(1000);
             armMovement.openGripper(); // Drop the sample
             sleep(1000);
