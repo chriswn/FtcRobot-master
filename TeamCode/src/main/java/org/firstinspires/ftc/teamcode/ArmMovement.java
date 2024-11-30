@@ -15,11 +15,10 @@ public class ArmMovement {
     private Servo rightClaw = null; // Right claw servo
 
     // Constants
-    private static final double TICKS_PER_REVOLUTION = 560.0;
-    private static final double WHEEL_DIAMETER = 4.0; // inches
-    private static final double MOTOR_POWER = 0.5;
-    private static final double SERVO_OPEN_POSITION = 1.0;  // Open position for the claw
-    private static final double SERVO_CLOSED_POSITION = 0.0; // Closed position for the claw
+    private static final double TICKS_PER_REVOLUTION = 560.0; // For REV Core Hex Motor
+    private static final double MOTOR_POWER = 0.5;           // Motor power level
+    private static final double SERVO_OPEN_POSITION = 1.0;  // Claw open position
+    private static final double SERVO_CLOSED_POSITION = 0.0; // Claw closed position
 
     private Telemetry telemetry;
 
@@ -28,76 +27,88 @@ public class ArmMovement {
         this.telemetry = telemetry;
 
         // Initialize motors
-        forearm = hardwareMap.get(DcMotor.class, "forearm");  // REV Robotics Core Hex Motor
-        shoulder = hardwareMap.get(DcMotor.class, "shoulder"); // Tetrix Motor
+        forearm = hardwareMap.get(DcMotor.class, "forearm");
+        shoulder = hardwareMap.get(DcMotor.class, "shoulder");
 
-        // Initialize servos for the gripper
+        // Initialize servos
         leftClaw = hardwareMap.get(Servo.class, "leftClaw");
         rightClaw = hardwareMap.get(Servo.class, "rightClaw");
 
-        // Set motor directions (adjust as per your setup)
+        // Set motor directions (adjust based on your robot design)
         forearm.setDirection(DcMotor.Direction.REVERSE);
         shoulder.setDirection(DcMotor.Direction.REVERSE);
+
+        // Reset encoders and set motors to use encoders
+        forearm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        shoulder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        forearm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        shoulder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
-    // Move arm by a given number of inches
-    public void move(double inches) {
-        resetEncoders();
-        int ticks = calculateTicks(inches);
-        setTargetPositions(ticks);
-        runMotorsToPosition(MOTOR_POWER);
+    /**
+     * Move the shoulder and forearm motors by a specified number of ticks.
+     *
+     * @param shoulderTicks Number of encoder ticks to move the shoulder.
+     * @param forearmTicks  Number of encoder ticks to move the forearm.
+     */
+    public void moveArmToPosition(int shoulderTicks, int forearmTicks) {
+        // Set target positions
+        shoulder.setTargetPosition(shoulder.getCurrentPosition() + shoulderTicks);
+        forearm.setTargetPosition(forearm.getCurrentPosition() + forearmTicks);
 
+        // Run motors to position
+        shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        forearm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        shoulder.setPower(MOTOR_POWER);
+        forearm.setPower(MOTOR_POWER);
+
+        // Wait for motors to reach their positions
         ElapsedTime runtime = new ElapsedTime();
-        while ((forearm.isBusy() || shoulder.isBusy()) && runtime.seconds() < 30) {
-            telemetry.addData("Forearm", forearm.getCurrentPosition());
-            telemetry.addData("Shoulder", shoulder.getCurrentPosition());
+        while ((shoulder.isBusy() || forearm.isBusy()) && runtime.seconds() < 5) {
+            telemetry.addData("Shoulder Position", shoulder.getCurrentPosition());
+            telemetry.addData("Forearm Position", forearm.getCurrentPosition());
             telemetry.update();
         }
+
+        // Stop motors
         stopMotors();
     }
+    public void moveShoulderToPosition(int ticks) {
+        moveArmToPosition(ticks, 0); // Move only the shoulder
+    }
 
-    // Open both claws (left and right)
+    public void rotateForearmToAngle(int ticks) {
+        moveArmToPosition(0, ticks); // Move only the forearm
+    }
+
+    /**
+     * Open the gripper.
+     */
     public void openGripper() {
         leftClaw.setPosition(SERVO_OPEN_POSITION);
         rightClaw.setPosition(SERVO_OPEN_POSITION);
+        telemetry.addData("Gripper", "Opened");
+        telemetry.update();
     }
 
-    // Close both claws (left and right)
+    /**
+     * Close the gripper.
+     */
     public void closeGripper() {
         leftClaw.setPosition(SERVO_CLOSED_POSITION);
         rightClaw.setPosition(SERVO_CLOSED_POSITION);
+        telemetry.addData("Gripper", "Closed");
+        telemetry.update();
     }
 
-    // Reset motor encoders
-    private void resetEncoders() {
-        forearm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        shoulder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-    }
-
-    // Calculate ticks based on inches to move
-    private int calculateTicks(double inches) {
-        double wheelCircumference = WHEEL_DIAMETER * Math.PI;
-        double rotations = inches / wheelCircumference;
-        return (int) (rotations * TICKS_PER_REVOLUTION);
-    }
-
-    // Set target positions for the motors
-    private void setTargetPositions(int ticks) {
-        forearm.setTargetPosition(forearm.getCurrentPosition() + ticks);
-        shoulder.setTargetPosition(shoulder.getCurrentPosition() + ticks);
-    }
-
-    // Run motors to the target positions
-    private void runMotorsToPosition(double power) {
-        forearm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        forearm.setPower(power);
-        shoulder.setPower(power);
-    }
-
-    // Stop all motors
-    private void stopMotors() {
-        forearm.setPower(0);
+    /**
+     * Stop all motors.
+     */
+    public void stopMotors() {
         shoulder.setPower(0);
+        forearm.setPower(0);
+        telemetry.addData("Motors", "Stopped");
+        telemetry.update();
     }
 }

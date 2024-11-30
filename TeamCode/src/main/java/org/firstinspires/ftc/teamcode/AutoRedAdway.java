@@ -39,9 +39,9 @@ public class AutoRedAdway extends LinearOpMode {
             armMovement.moveShoulderToPosition(0); // Move shoulder back to neutral
 
             // Deliver the sample to the lower basket
-            turnRight(90); 
+            turnRight(90);
             moveToPosition(12);
-            armMovement.moveShoulderToPosition(25.75); // Raise shoulder to basket height
+            armMovement.moveShoulderToPosition(25); // Raise shoulder to basket height
             sleep(1000);
             armMovement.openGripper(); // Drop the sample
             sleep(1000);
@@ -55,7 +55,7 @@ public class AutoRedAdway extends LinearOpMode {
                 sleep(1000);
 
                 armMovement.rotateForearmToAngle(0);
-                armMovement.moveShoulderToPosition(25.75); // Raise shoulder for scoring
+                armMovement.moveShoulderToPosition(25); // Raise shoulder for scoring
                 moveToPosition(12);
                 armMovement.openGripper();
                 sleep(1000);
