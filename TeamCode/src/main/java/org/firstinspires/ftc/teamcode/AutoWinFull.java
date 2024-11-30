@@ -23,38 +23,32 @@ public class AutoWinFull extends LinearOpMode {
         waitForStart();
 
         if (opModeIsActive()) {
-            // Autonomous routine
             try {
-                // Step 1: Move to the target zone
                 telemetry.addData("Step 1", "Moving to Target Zone...");
                 telemetry.update();
                 moveToTargetZone(36); // Move forward 36 inches
 
-                // Step 2: Open the gripper to release scoring elements
-                telemetry.addData("Step 2", "Opening Gripper...");
+                telemetry.addData("Opening Gripper");
                 telemetry.update();
                 armMovement.openGripper();
                 sleep(1000); // Wait for 1 second
 
-                // Step 3: Move the arm to pick or place an element
-                telemetry.addData("Step 3", "Moving Arm...");
+                telemetry.addData("Moving Arm");
                 telemetry.update();
                 armMovement.move(10); // Move arm 10 inches forward
                 sleep(500); // Wait for movement to complete
 
-                // Step 4: Close the gripper to secure an element
-                telemetry.addData("Step 4", "Closing Gripper...");
+                telemetry.addData(, "Closing Gripper");
                 telemetry.update();
                 armMovement.closeGripper();
                 sleep(1000);
 
-                // Step 5: Park the robot in the safe zone
-                telemetry.addData("Step 5", "Parking in Safe Zone...");
+                telemetry.addData("Parking in Safe Zone");
                 telemetry.update();
                 moveToTargetZone(-24); // Move backward 24 inches
 
                 // Final step: Stop all motors
-                telemetry.addData("Status", "Autonomous Complete");
+                telemetry.addData("Autonomous Complete");
                 telemetry.update();
                 stopMotors();
             } catch (Exception e) {
