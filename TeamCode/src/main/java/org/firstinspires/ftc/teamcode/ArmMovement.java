@@ -15,10 +15,13 @@ public class ArmMovement {
     private Servo rightClaw = null; // Right claw servo
 
     // Constants
+    private static final double LEFT_CLAW_OPEN_POSITION = 1.0;  // Left claw open position
+    private static final double LEFT_CLAW_CLOSED_POSITION = 0.0; // Left claw closed position
+    private static final double RIGHT_CLAW_OPEN_POSITION = 0.0;  // Right claw open position (inverted)
+    private static final double RIGHT_CLAW_CLOSED_POSITION = 1.0; // Right claw closed position (inverted)
+
     private static final double TICKS_PER_REVOLUTION = 560.0; // For REV Core Hex Motor
     private static final double MOTOR_POWER = 0.5;           // Motor power level
-    private static final double SERVO_OPEN_POSITION = 1.0;  // Claw open position
-    private static final double SERVO_CLOSED_POSITION = 0.0; // Claw closed position
 
     private Telemetry telemetry;
 
@@ -74,6 +77,7 @@ public class ArmMovement {
         // Stop motors
         stopMotors();
     }
+
     public void moveShoulderToPosition(int ticks) {
         moveArmToPosition(ticks, 0); // Move only the shoulder
     }
@@ -86,8 +90,8 @@ public class ArmMovement {
      * Open the gripper.
      */
     public void openGripper() {
-        leftClaw.setPosition(SERVO_OPEN_POSITION);
-        rightClaw.setPosition(SERVO_OPEN_POSITION);
+        leftClaw.setPosition(LEFT_CLAW_OPEN_POSITION);
+        rightClaw.setPosition(RIGHT_CLAW_OPEN_POSITION);
         telemetry.addData("Gripper", "Opened");
         telemetry.update();
     }
@@ -96,8 +100,8 @@ public class ArmMovement {
      * Close the gripper.
      */
     public void closeGripper() {
-        leftClaw.setPosition(SERVO_CLOSED_POSITION);
-        rightClaw.setPosition(SERVO_CLOSED_POSITION);
+        leftClaw.setPosition(LEFT_CLAW_CLOSED_POSITION);
+        rightClaw.setPosition(RIGHT_CLAW_CLOSED_POSITION);
         telemetry.addData("Gripper", "Closed");
         telemetry.update();
     }
