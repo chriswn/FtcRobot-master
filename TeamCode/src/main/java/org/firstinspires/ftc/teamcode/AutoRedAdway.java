@@ -30,12 +30,12 @@ public class AutoRedAdway extends LinearOpMode {
 
             // Pick up the sample using the claw
             armMovement.moveShoulderToPosition(-5); // Lower shoulder to reach the sample
-            armMovement.rotateForearmToAngle(90); // Rotate forearm for alignment
-            armMovement.closeGripper(); // Grab the sample
+            armMovement.rotateForearmToAngle(90);  // Rotate forearm for alignment
+            armMovement.closeGripper();           // Grab the sample
             sleep(1000);
 
             // Reset arm to neutral position for transport
-            armMovement.rotateForearmToAngle(0); // Reset forearm to neutral
+            armMovement.rotateForearmToAngle(0);  // Reset forearm to neutral
             armMovement.moveShoulderToPosition(0); // Move shoulder back to neutral
 
             // Deliver the sample to the lower basket
@@ -43,7 +43,7 @@ public class AutoRedAdway extends LinearOpMode {
             moveToPosition(12);
             armMovement.moveShoulderToPosition(25); // Raise shoulder to basket height
             sleep(1000);
-            armMovement.openGripper(); // Drop the sample
+            armMovement.openGripper();             // Drop the sample
             sleep(1000);
 
             // Optionally attempt to pick up and score a second sample
@@ -63,6 +63,8 @@ public class AutoRedAdway extends LinearOpMode {
 
             // Park in the designated zone if time is short
             if (runtime.seconds() >= 20 || runtime.seconds() + 10 > 30) {
+                telemetry.addData("Status", "Parking");
+                telemetry.update();
                 moveToPosition(-12);
                 turnLeft(90);
                 moveToPosition(-36);

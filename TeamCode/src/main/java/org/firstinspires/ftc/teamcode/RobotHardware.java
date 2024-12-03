@@ -14,6 +14,8 @@ public class RobotHardware {
 
     private static final double TICKS_PER_REVOLUTION = 560.0;
     private static final double WHEEL_DIAMETER = 4.0; // inches
+    private static final double WHEEL_BASE = 16.0;    // inches between wheels
+
     private Telemetry telemetry;
     private double wheelCircumference;
 
@@ -42,9 +44,31 @@ public class RobotHardware {
         runMotorsToPosition(0.5);
 
         ElapsedTime runtime = new ElapsedTime();
-        while (motorsBusy() && runtime.seconds() < 30) {
-            telemetry.addData("Motor Positions", "Left: %d, Right: %d",
-                    frontLeftMotor.getCurrentPosition(), frontRightMotor.getCurrentPosition());
+        while (motorsBusy() && runtime.seconds() < 10) {
+            telemetry.addData("Forward", "Target: %d ticks", ticks);
+            telemetry.addData("FL Motor Position", frontLeftMotor.getCurrentPosition());
+            telemetry.addData("FR Motor Position", frontRightMotor.getCurrentPosition());
+            telemetry.update();
+        }
+
+        stopMotors();
+    }
+
+    public void turn(int degrees, boolean clockwise) {
+        double turnCircumference = Math.PI * WHEEL_BASE;
+        double ticksPerDegree = (TICKS_PER_REVOLUTION / wheelCircumference) * turnCircumference / 360.0;
+        int ticks = (int) (ticksPerDegree * degrees);
+
+        if (clockwise) {
+            setTargetPositionsForTurn(ticks, -ticks);
+        } else {
+            setTargetPositionsForTurn(-ticks, ticks);
+        }
+
+        runMotorsToPosition(0.5);
+
+        while (motorsBusy()) {
+            telemetry.addData("Turning", "Degrees: %d, Clockwise: %b", degrees, clockwise);
             telemetry.update();
         }
 
@@ -63,6 +87,13 @@ public class RobotHardware {
         backRightMotor.setTargetPosition(backRightMotor.getCurrentPosition() + ticks);
     }
 
+    private void setTargetPositionsForTurn(int leftTicks, int rightTicks) {
+        frontLeftMotor.setTargetPosition(frontLeftMotor.getCurrentPosition() + leftTicks);
+        backLeftMotor.setTargetPosition(backLeftMotor.getCurrentPosition() + leftTicks);
+        frontRightMotor.setTargetPosition(frontRightMotor.getCurrentPosition() + rightTicks);
+        backRightMotor.setTargetPosition(backRightMotor.getCurrentPosition() + rightTicks);
+    }
+
     private void runMotorsToPosition(double power) {
         frontLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         backLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -73,35 +104,6 @@ public class RobotHardware {
         backLeftMotor.setPower(power);
         frontRightMotor.setPower(power);
         backRightMotor.setPower(power);
-    }
-
-    public void turn(int degrees, boolean clockwise) {
-        double wheelBase = 16.0; // inches between wheels
-        double turnCircumference = Math.PI * wheelBase;
-        double ticksPerDegree = (TICKS_PER_REVOLUTION / wheelCircumference) * turnCircumference / 360.0;
-        int ticks = (int) (ticksPerDegree * degrees);
-
-        if (clockwise) {
-            setTargetPositionsForTurn(ticks, -ticks);
-        } else {
-            setTargetPositionsForTurn(-ticks, ticks);
-        }
-
-        runMotorsToPosition(0.5);
-
-        while (motorsBusy()) {
-            telemetry.addData("Turning", "In Progress...");
-            telemetry.update();
-        }
-
-        stopMotors();
-    }
-
-    private void setTargetPositionsForTurn(int leftTicks, int rightTicks) {
-        frontLeftMotor.setTargetPosition(frontLeftMotor.getCurrentPosition() + leftTicks);
-        backLeftMotor.setTargetPosition(backLeftMotor.getCurrentPosition() + leftTicks);
-        frontRightMotor.setTargetPosition(frontRightMotor.getCurrentPosition() + rightTicks);
-        backRightMotor.setTargetPosition(backRightMotor.getCurrentPosition() + rightTicks);
     }
 
     private void resetEncoders() {
