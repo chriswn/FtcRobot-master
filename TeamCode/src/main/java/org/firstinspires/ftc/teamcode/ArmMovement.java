@@ -18,8 +18,8 @@ public class ArmMovement {
     // Constants
     private static final double LEFT_CLAW_OPEN_POSITION = 1.0;  // Left claw open position
     private static final double LEFT_CLAW_CLOSED_POSITION = 0.0; // Left claw closed position
-    private static final double RIGHT_CLAW_OPEN_POSITION = 0.0;  // Right claw open position (inverted)
-    private static final double RIGHT_CLAW_CLOSED_POSITION = 1.0; // Right claw closed position (inverted)
+    private static final double RIGHT_CLAW_OPEN_POSITION = -1.0;  // Right claw open position (inverted)
+    private static final double RIGHT_CLAW_CLOSED_POSITION = 0.0; // Right claw closed position (inverted)
 
     private static final double TICKS_PER_REVOLUTION = 1440.0; // For Tetrix
     private static final double MOTOR_POWER = 1.0; // Motor power level
@@ -38,7 +38,11 @@ public class ArmMovement {
         leftClaw = hardwareMap.get(Servo.class, "leftClaw");
         rightClaw = hardwareMap.get(Servo.class, "rightClaw");
     }
+    private void resetEncoders() {
+        shoulder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        forearm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
+    }
     /**
      * Helper method to initialize a motor with default settings.
      */
@@ -62,7 +66,9 @@ public class ArmMovement {
      *
      * @param shoulderTicks Number of encoder ticks to move the shoulder.
      * @param forearmTicks  Number of encoder ticks to move the forearm.
+     *
      */
+
     public void moveArmToPosition(int shoulderTicks, int forearmTicks) {
         // Set target positions
         shoulder.setTargetPosition(shoulder.getCurrentPosition() + shoulderTicks);
