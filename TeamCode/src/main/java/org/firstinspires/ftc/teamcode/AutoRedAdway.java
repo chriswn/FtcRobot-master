@@ -30,7 +30,7 @@ public class AutoRedAdway extends LinearOpMode {
 
             // Pick up the sample using the claw
             armMovement.moveShoulderToPosition(-5); // Lower shoulder to reach the sample
-            armMovement.rotateForearmToAngle(90);  // Rotate forearm for alignment
+            armMovement.rotateForearmToAngle(80);  // Rotate forearm for alignment
             armMovement.closeGripper();           // Grab the sample
             sleep(1000);
 

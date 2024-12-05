@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -20,8 +21,9 @@ public class ArmMovement {
     private static final double RIGHT_CLAW_OPEN_POSITION = 0.0;  // Right claw open position (inverted)
     private static final double RIGHT_CLAW_CLOSED_POSITION = 1.0; // Right claw closed position (inverted)
 
-    private static final double TICKS_PER_REVOLUTION = 560.0; // For REV Core Hex Motor
-    private static final double MOTOR_POWER = 0.5;           // Motor power level
+    private static final double TICKS_PER_REVOLUTION = 1440.0; // For Tetrix
+    private static final double MOTOR_POWER = 1.0; // Motor power level
+    private static final double TIMEOUT_SECONDS = 5.0; // Timeout for movement
 
     private Telemetry telemetry;
 
@@ -29,23 +31,30 @@ public class ArmMovement {
     public ArmMovement(HardwareMap hardwareMap, Telemetry telemetry) {
         this.telemetry = telemetry;
 
-        // Initialize motors
-        forearm = hardwareMap.get(DcMotor.class, "forearm");
-        shoulder = hardwareMap.get(DcMotor.class, "shoulder");
+        // Initialize motors and servos
+        forearm = initializeMotor(hardwareMap, "forearm", DcMotor.Direction.REVERSE);
+        shoulder = initializeMotor(hardwareMap, "shoulder", DcMotor.Direction.FORWARD );
 
-        // Initialize servos
         leftClaw = hardwareMap.get(Servo.class, "leftClaw");
         rightClaw = hardwareMap.get(Servo.class, "rightClaw");
+    }
 
-        // Set motor directions (adjust based on your robot design)
-        forearm.setDirection(DcMotor.Direction.REVERSE);
-        shoulder.setDirection(DcMotor.Direction.REVERSE);
+    /**
+     * Helper method to initialize a motor with default settings.
+     */
+    private DcMotor initializeMotor(HardwareMap hardwareMap, String name, DcMotor.Direction direction) {
+        DcMotor motor = hardwareMap.get(DcMotor.class, name);
+        motor.setDirection(direction);
+        motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        return motor;
+    }
 
-        // Reset encoders and set motors to use encoders
-        forearm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        shoulder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        forearm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        shoulder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    /**
+     * Converts degrees of rotation to encoder ticks.
+     */
+    private int degreesToTicks(double degrees) {
+        return (int) (degrees / 360.0 * TICKS_PER_REVOLUTION);
     }
 
     /**
@@ -67,21 +76,43 @@ public class ArmMovement {
         forearm.setPower(MOTOR_POWER);
 
         // Wait for motors to reach their positions
-        ElapsedTime runtime = new ElapsedTime();
-        while ((shoulder.isBusy() || forearm.isBusy()) && runtime.seconds() < 5) {
-            telemetry.addData("Shoulder Position", shoulder.getCurrentPosition());
-            telemetry.addData("Forearm Position", forearm.getCurrentPosition());
-            telemetry.update();
-        }
+        waitForMotors(shoulder, forearm);
 
         // Stop motors
         stopMotors();
     }
 
+    /**
+     * Waits for specified motors to finish or until timeout.
+     */
+    private void waitForMotors(DcMotor... motors) {
+        ElapsedTime runtime = new ElapsedTime();
+        while (runtime.seconds() < TIMEOUT_SECONDS) {
+            boolean allIdle = true;
+            for (DcMotor motor : motors) {
+                if (motor.isBusy()) {
+                    allIdle = false;
+                }
+            }
+            if (allIdle) break;
+
+            // Update telemetry during the wait
+            telemetry.addData("Shoulder Position", shoulder.getCurrentPosition());
+            telemetry.addData("Forearm Position", forearm.getCurrentPosition());
+            telemetry.update();
+        }
+    }
+
+    /**
+     * Move the shoulder motor by a specific number of ticks.
+     */
     public void moveShoulderToPosition(int ticks) {
         moveArmToPosition(ticks, 0); // Move only the shoulder
     }
 
+    /**
+     * Rotate the forearm motor by a specific number of ticks.
+     */
     public void rotateForearmToAngle(int ticks) {
         moveArmToPosition(0, ticks); // Move only the forearm
     }
@@ -114,5 +145,17 @@ public class ArmMovement {
         forearm.setPower(0);
         telemetry.addData("Motors", "Stopped");
         telemetry.update();
+    }
+
+    /**
+     * Move the arm by degrees for the shoulder and forearm.
+     *
+     * @param shoulderDegrees Degrees to rotate the shoulder.
+     * @param forearmDegrees  Degrees to rotate the forearm.
+     */ 
+    public void moveArmByDegrees(double shoulderDegrees, double forearmDegrees) {
+        int shoulderTicks = degreesToTicks(shoulderDegrees);
+        int forearmTicks = degreesToTicks(forearmDegrees);
+        moveArmToPosition(shoulderTicks, forearmTicks);
     }
 }
