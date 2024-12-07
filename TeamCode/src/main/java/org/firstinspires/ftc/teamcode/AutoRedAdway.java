@@ -11,7 +11,6 @@ public class AutoRedAdway extends LinearOpMode {
     private ArmMovement armMovement;
     private ElapsedTime runtime;
 
-    // Basket heights in encoder ticks (calibrated based on basket heights)
     private static final int LOW_BASKET_TICKS = 600;  // Adjust based on your arm calibration
     private static final int HIGH_BASKET_TICKS = 1200;
 
@@ -68,8 +67,11 @@ public class AutoRedAdway extends LinearOpMode {
         robotHardware.turn(degrees, false);
     }
 
+   // private void PreLoad{
+
+   // }
     private void pickUpSample() {
-        armMovement.moveShoulderToPosition(-500);  // Lower shoulder to reach sample
+        armMovement.moveShoulderToPosition(1200);  // Lower shoulder to reach sample
         armMovement.rotateForearmToAngle(6);       // Align forearm
         armMovement.closeGripper();                // Grab the sample
         armMovement.resetArmPosition();            // Reset to transport position

@@ -12,7 +12,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 public class shoulder extends LinearOpMode {
     private DcMotor shoulder;
     private static final double TICKS_PER_REVOLUTION = 1440.0;
-    private static final double MOTOR_POWER = 0.5;           // Motor power level
+    private static final double MOTOR_POWER = 0;           // Motor power level
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -26,7 +26,7 @@ public class shoulder extends LinearOpMode {
         waitForStart();
 
         // Move shoulder to a specific position
-        moveShoulderToPosition(100); // Move to 1000 encoder ticks (for example)
+        moveShoulderToPosition(3000);
 
         // Add any additional operations after the movement
     }
@@ -45,11 +45,11 @@ public class shoulder extends LinearOpMode {
         }
 
         // Stop the motor once the target is reached
-        stopMotors();
+       // stopMotors();
     }
 
     // Method to stop the motors
-    public void stopMotors() {
-        shoulder.setPower(0); // Stop the shoulder motor
-    }
+   // public void stopMotors() {
+     //   shoulder.setPower(0); // Stop the shoulder motor
+  //  }
 }

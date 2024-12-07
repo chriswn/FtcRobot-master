@@ -18,13 +18,13 @@ public class ArmMovement {
     private static final double RIGHT_CLAW_OPEN_POSITION = -1.0;
     private static final double RIGHT_CLAW_CLOSED_POSITION = 0.0;
 
-    private static final int SHOULDER_MIN_TICKS = 100;
-    private static final int SHOULDER_MAX_TICKS = 1000;
+    private static final int SHOULDER_MIN_TICKS = -500;
+    private static final int SHOULDER_MAX_TICKS = 3000;
     private static final int FOREARM_MIN_TICKS = 0;
     private static final int FOREARM_MAX_TICKS = 500;
 
     private static final double TICKS_PER_REVOLUTION = 1440.0;
-    private static final double MOTOR_POWER = 1.0;
+    private static final double MOTOR_POWER = 0.0;
     private static final double TIMEOUT_SECONDS = 5.0;
 
     private Telemetry telemetry;
@@ -47,8 +47,19 @@ public class ArmMovement {
     }
 
     public void moveArmToPosition(int shoulderTicks, int forearmTicks) {
+        double shoulderModifier = 1.0;
+        double forearmModifier = 1.0;
+
         shoulderTicks = Math.max(SHOULDER_MIN_TICKS, Math.min(SHOULDER_MAX_TICKS, shoulderTicks));
         forearmTicks = Math.max(FOREARM_MIN_TICKS, Math.min(FOREARM_MAX_TICKS, forearmTicks));
+
+        if (shoulderTicks < 0) {
+            shoulderModifier = -1.0;
+        }
+
+        if (forearmTicks < 0) {
+            forearmModifier = -1.0;
+        }
 
         shoulder.setTargetPosition(shoulder.getCurrentPosition() + shoulderTicks);
         forearm.setTargetPosition(forearm.getCurrentPosition() + forearmTicks);
@@ -56,13 +67,14 @@ public class ArmMovement {
         shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         forearm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        shoulder.setPower(MOTOR_POWER);
-        forearm.setPower(MOTOR_POWER);
+        shoulder.setPower(MOTOR_POWER * shoulderModifier);
+        forearm.setPower(MOTOR_POWER * forearmModifier);
 
         waitForMotors(shoulder, forearm);
 
         stopMotors();
     }
+
 
     public void moveShoulderToPosition(int ticks) {
         moveArmToPosition(ticks, 0);
