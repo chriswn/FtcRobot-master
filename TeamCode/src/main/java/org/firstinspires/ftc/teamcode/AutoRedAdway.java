@@ -27,11 +27,13 @@ public class AutoRedAdway extends LinearOpMode {
         telemetry.update();
 
         preloadSetup();  // Preload the sample before match start
-
+        armMovement.moveArmToPosition(100, 50);  // Adjust the second value as appropriate
         waitForStart();
         runtime.reset();
 
         if (opModeIsActive()) {
+            telemetry.addData("Status", "Starting Autonomous...");
+            telemetry.update();
             performAutonomousRoutine();
         }
 
