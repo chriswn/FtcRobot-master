@@ -11,8 +11,11 @@ public class AutoRedAdway extends LinearOpMode {
     private ArmMovement armMovement;
     private ElapsedTime runtime;
 
-    private static final int LOW_BASKET_TICKS = 600;  // Adjust based on your arm calibration
-    private static final int HIGH_BASKET_TICKS = 1200;
+    // Calibrated positions for specific tasks
+    private static final int LOW_BASKET_SHOULDER_TICKS = 2374;
+    private static final int LOW_BASKET_FOREARM_TICKS = 300;
+    private static final int PICKUP_SHOULDER_TICKS = 0;
+    private static final int PICKUP_FOREARM_TICKS = -300;
 
     @Override
     public void runOpMode() {
@@ -22,6 +25,8 @@ public class AutoRedAdway extends LinearOpMode {
 
         telemetry.addData("Status", "Initializing...");
         telemetry.update();
+
+        preloadSetup();  // Preload the sample before match start
 
         waitForStart();
         runtime.reset();
@@ -34,25 +39,49 @@ public class AutoRedAdway extends LinearOpMode {
         telemetry.update();
     }
 
+    private void preloadSetup() {
+        telemetry.addData("Status", "Preloading Sample...");
+        telemetry.update();
+        armMovement.closeGripper();  // Secure preloaded sample
+        armMovement.resetArmPosition();  // Set arm to transport position
+        telemetry.addData("Status", "Preload Setup Complete");
+        telemetry.update();
+    }
+
     private void performAutonomousRoutine() {
-        // Step 1: Approach sample line
-        moveToPosition(12);  // Distance to sample line
+        // Step 1: Deliver Preloaded Sample to Low Basket
+        deliverSampleToBasket();
 
-        // Step 2: Pick up sample
-        pickUpSample();
-
-        // Step 3: Deliver to Low Basket
-        deliverSampleToBasket(LOW_BASKET_TICKS);
-
-        // Step 4: Optional - Attempt another sample if time allows
+        // Step 2: Attempt to pick up another sample if time allows
         if (runtime.seconds() < 20) {
-            attemptSecondSample(LOW_BASKET_TICKS);
+            pickUpSample();
+            deliverSampleToBasket();
         }
 
-        // Step 5: Park in Observation Zone
+        // Step 3: Park in Observation Zone
         if (runtime.seconds() + 10 <= 30) {
             parkInObservationZone();
         }
+    }
+
+    private void deliverSampleToBasket() {
+        telemetry.addData("Status", "Delivering Sample to Basket...");
+        telemetry.update();
+
+        moveToPosition(-8);                              // Short backward adjustment
+        turnRight(90);                                    // Turn to align with basket
+        moveToPosition(28);                               // Approach low basket
+        armMovement.moveArmToPosition(LOW_BASKET_SHOULDER_TICKS, LOW_BASKET_FOREARM_TICKS);  // Adjust arm for Low Basket
+        armMovement.openGripper();                       // Release sample
+        armMovement.resetArmPosition();                  // Reset arm for safe navigation
+    }
+
+    private void pickUpSample() {
+        telemetry.addData("Status", "Picking up Sample...");
+        telemetry.update();
+        armMovement.moveArmToPosition(PICKUP_SHOULDER_TICKS, PICKUP_FOREARM_TICKS);  // Align for pickup
+        armMovement.closeGripper();              // Grab the sample
+        armMovement.resetArmPosition();          // Reset to transport position
     }
 
     private void moveToPosition(double inches) {
@@ -67,42 +96,12 @@ public class AutoRedAdway extends LinearOpMode {
         robotHardware.turn(degrees, false);
     }
 
-   // private void PreLoad{
-
-   // }
-    private void pickUpSample() {
-        telemetry.addData("Status", "pickUpSample...");
-        telemetry.update();
-        armMovement.moveShoulderToPosition(100);  // rise shoulder to reach sample
-        armMovement.rotateForearmToAngle(-300);       // Align forearm
-        armMovement.closeGripper();                // Grab the sample
-        armMovement.resetArmPosition();            // Reset to transport position
-    }
-
-    private void deliverSampleToBasket(int basketHeightTicks) {
-        telemetry.addData("Status", "deliverSampleToBasket...");
-        telemetry.update();
-        moveToPosition(-10);
-        turnRight(90);                             // Turn towards basket
-        moveToPosition(36);                        // Approach basket
-        armMovement.moveShoulderToPosition(basketHeightTicks);  // Raise shoulder to basket height
-        armMovement.openGripper();                // Drop the sample
-        armMovement.resetArmPosition();           // Reset arm
-    }
-
-    private void attemptSecondSample(int basketHeightTicks) {
-        telemetry.addData("Status", "attemptSecondSample...");
-        telemetry.update();
-        moveToPosition(-12);                       // Move back to sample area
-        pickUpSample();                            // Repeat pickup process
-        deliverSampleToBasket(basketHeightTicks);  // Score second sample
-    }
-
     private void parkInObservationZone() {
-        telemetry.addData("Status", "parkInObservationZone...");
+        telemetry.addData("Status", "Parking in Observation Zone...");
         telemetry.update();
-        moveToPosition(-12);                       // Back away from basket
-        turnLeft(90);                              // Align with Observation Zone
-        moveToPosition(-36);                       // Park in zone
+
+        moveToPosition(-15);                       // Back away from basket
+        turnLeft(90);                              // Align with observation zone
+        moveToPosition(24);                        // Move into the observation zone
     }
 }

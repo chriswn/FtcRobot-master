@@ -24,7 +24,7 @@ public class ArmMovement {
     private static final int FOREARM_MAX_TICKS = 500;
 
     private static final double TICKS_PER_REVOLUTION = 1440.0;
-    private static final double MOTOR_POWER = 0.0;
+    private static final double MOTOR_POWER = 2.0;
     private static final double TIMEOUT_SECONDS = 5.0;
 
     private Telemetry telemetry;
