@@ -54,7 +54,7 @@ public class ArmMovement {
         shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         forearm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        shoulder.setPower(2);  // Increased power for sufficient torque
+        shoulder.setPower(5);  // Increased power for sufficient torque
         forearm.setPower(5);
 
         waitForMotors(shoulder, forearm);

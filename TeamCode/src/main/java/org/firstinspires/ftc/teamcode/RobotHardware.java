@@ -43,7 +43,7 @@ public class RobotHardware {
         resetEncoders();
         int ticks = calculateTicks(inches);
         setTargetPositions(ticks);
-        runMotorsToPosition(2);
+        runMotorsToPosition(5);
 
         ElapsedTime runtime = new ElapsedTime();
         while (motorsBusy() && runtime.seconds() < 10) {

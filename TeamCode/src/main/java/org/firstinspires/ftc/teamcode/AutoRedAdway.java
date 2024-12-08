@@ -28,6 +28,7 @@ public class AutoRedAdway extends LinearOpMode {
 
         preloadSetup();  // Preload the sample before match start
         armMovement.moveArmToPosition(100, 50);  // Adjust the second value as appropriate
+        sleep(500); // Allow some time for the arm adjustment
         waitForStart();
         runtime.reset();
 
@@ -45,7 +46,9 @@ public class AutoRedAdway extends LinearOpMode {
         telemetry.addData("Status", "Preloading Sample...");
         telemetry.update();
         armMovement.closeGripper();  // Secure preloaded sample
+        sleep(500); // Wait for the gripper to fully close
         armMovement.resetArmPosition();  // Set arm to transport position
+        sleep(500); // Allow time for the arm to move
         telemetry.addData("Status", "Preload Setup Complete");
         telemetry.update();
     }
@@ -70,41 +73,67 @@ public class AutoRedAdway extends LinearOpMode {
         telemetry.addData("Status", "Delivering Sample to Basket...");
         telemetry.update();
 
-        moveToPosition(35);                              // Short backward adjustment
-        turnRight(95);// Turn to align with basket
+        moveToPosition(35);
+        sleep(500); // Wait to ensure the robot has stopped
+        turnRight(95);
+        sleep(500);
         turnRight(32);
-        moveToPosition(340);                               // Approach low basket
-        armMovement.moveArmToPosition(LOW_BASKET_SHOULDER_TICKS, LOW_BASKET_FOREARM_TICKS);  // Adjust arm for Low Basket
-        armMovement.openGripper();                       // Release sample
-        armMovement.resetArmPosition();                  // Reset arm for safe navigation
+        sleep(500);
+        moveToPosition(97);
+        sleep(500);
+
+        armMovement.moveArmToPosition(LOW_BASKET_SHOULDER_TICKS, LOW_BASKET_FOREARM_TICKS);
+        sleep(500);
+        armMovement.openGripper();
+        sleep(500);
+        armMovement.resetArmPosition();
+        sleep(500);
     }
 
     private void pickUpSample() {
         telemetry.addData("Status", "Picking up Sample...");
         telemetry.update();
-        armMovement.moveArmToPosition(PICKUP_SHOULDER_TICKS, PICKUP_FOREARM_TICKS);  // Align for pickup
-        armMovement.closeGripper();              // Grab the sample
-        armMovement.resetArmPosition();          // Reset to transport position
+        armMovement.moveArmToPosition(PICKUP_SHOULDER_TICKS, PICKUP_FOREARM_TICKS);
+        sleep(500);
+        armMovement.closeGripper();
+        sleep(500);
+        armMovement.resetArmPosition();
+        sleep(500);
     }
 
     private void moveToPosition(double inches) {
         robotHardware.forwardForDistance(inches);
+        sleep(500); // Wait for robot to reach position
     }
 
     private void turnRight(int degrees) {
         robotHardware.turn(degrees, true);
+        sleep(500); // Allow time for the turn to complete
     }
 
     private void turnLeft(int degrees) {
         robotHardware.turn(degrees, false);
+        sleep(500);
     }
 
     private void parkInObservationZone() {
         telemetry.addData("Status", "Parking in Observation Zone...");
         telemetry.update();
 
-        moveToPosition(-15);                       // Back away from basket
-        turnLeft(90);                              // Align with observation zone
-        moveToPosition(24);                        // Move into the observation zone
+        moveToPosition(-15);
+        sleep(500);
+        turnLeft(90);
+        sleep(500);
+        moveToPosition(24);
+        sleep(500);
+    }
+
+    private void sleep(int milliseconds) {
+        try {
+            Thread.sleep(milliseconds);
+        } catch (InterruptedException e) {
+            telemetry.addData("Error", "Sleep Interrupted");
+            telemetry.update();
+        }
     }
 }
