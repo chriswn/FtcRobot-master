@@ -36,7 +36,7 @@ public class AutoRedAdway extends LinearOpMode {
 
     private void performAutonomousRoutine() {
         // Step 1: Approach sample line
-        moveToPosition(24);  // Distance to sample line
+        moveToPosition(12);  // Distance to sample line
 
         // Step 2: Pick up sample
         pickUpSample();
@@ -71,27 +71,36 @@ public class AutoRedAdway extends LinearOpMode {
 
    // }
     private void pickUpSample() {
-        armMovement.moveShoulderToPosition(1200);  // Lower shoulder to reach sample
-        armMovement.rotateForearmToAngle(6);       // Align forearm
+        telemetry.addData("Status", "pickUpSample...");
+        telemetry.update();
+        armMovement.moveShoulderToPosition(100);  // rise shoulder to reach sample
+        armMovement.rotateForearmToAngle(-300);       // Align forearm
         armMovement.closeGripper();                // Grab the sample
         armMovement.resetArmPosition();            // Reset to transport position
     }
 
     private void deliverSampleToBasket(int basketHeightTicks) {
+        telemetry.addData("Status", "deliverSampleToBasket...");
+        telemetry.update();
+        moveToPosition(-10);
         turnRight(90);                             // Turn towards basket
-        moveToPosition(12);                        // Approach basket
+        moveToPosition(36);                        // Approach basket
         armMovement.moveShoulderToPosition(basketHeightTicks);  // Raise shoulder to basket height
         armMovement.openGripper();                // Drop the sample
         armMovement.resetArmPosition();           // Reset arm
     }
 
     private void attemptSecondSample(int basketHeightTicks) {
+        telemetry.addData("Status", "attemptSecondSample...");
+        telemetry.update();
         moveToPosition(-12);                       // Move back to sample area
         pickUpSample();                            // Repeat pickup process
         deliverSampleToBasket(basketHeightTicks);  // Score second sample
     }
 
     private void parkInObservationZone() {
+        telemetry.addData("Status", "parkInObservationZone...");
+        telemetry.update();
         moveToPosition(-12);                       // Back away from basket
         turnLeft(90);                              // Align with Observation Zone
         moveToPosition(-36);                       // Park in zone

@@ -14,13 +14,13 @@ public class ArmMovement {
     private Servo rightClaw;
 
     private static final double LEFT_CLAW_OPEN_POSITION = 1.0;
-    private static final double LEFT_CLAW_CLOSED_POSITION = 0.0;
-    private static final double RIGHT_CLAW_OPEN_POSITION = -1.0;
-    private static final double RIGHT_CLAW_CLOSED_POSITION = 0.0;
+    private static final double LEFT_CLAW_CLOSED_POSITION = 0.1;
+    private static final double RIGHT_CLAW_OPEN_POSITION = 0.1;
+    private static final double RIGHT_CLAW_CLOSED_POSITION = 1.0;
 
     private static final int SHOULDER_MIN_TICKS = -500;
     private static final int SHOULDER_MAX_TICKS = 3000;
-    private static final int FOREARM_MIN_TICKS = 0;
+    private static final int FOREARM_MIN_TICKS = -100;
     private static final int FOREARM_MAX_TICKS = 500;
 
     private static final double TICKS_PER_REVOLUTION = 1440.0;
@@ -33,7 +33,7 @@ public class ArmMovement {
         this.telemetry = telemetry;
 
         shoulder = initializeMotor(hardwareMap, "shoulder", DcMotor.Direction.FORWARD);
-        forearm = initializeMotor(hardwareMap, "forearm", DcMotor.Direction.REVERSE);
+        forearm = initializeMotor(hardwareMap, "forearm", DcMotor.Direction.FORWARD);
         leftClaw = hardwareMap.get(Servo.class, "leftClaw");
         rightClaw = hardwareMap.get(Servo.class, "rightClaw");
     }

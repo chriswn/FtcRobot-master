@@ -43,7 +43,7 @@ public class RobotHardware {
         resetEncoders();
         int ticks = calculateTicks(inches);
         setTargetPositions(ticks);
-        runMotorsToPosition(0.5);
+        runMotorsToPosition(0);
 
         ElapsedTime runtime = new ElapsedTime();
         while (motorsBusy() && runtime.seconds() < 10) {
@@ -67,7 +67,7 @@ public class RobotHardware {
             setTargetPositionsForTurn(-ticks, ticks);
         }
 
-        runMotorsToPosition(0.5);
+        runMotorsToPosition(1);
 
         while (motorsBusy()) {
             telemetry.addData("Turning", "Degrees: %d, Clockwise: %b", degrees, clockwise);
