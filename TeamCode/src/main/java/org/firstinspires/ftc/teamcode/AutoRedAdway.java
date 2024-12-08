@@ -13,7 +13,7 @@ public class AutoRedAdway extends LinearOpMode {
 
     // Calibrated positions for specific tasks
     private static final int LOW_BASKET_SHOULDER_TICKS = 2374;
-    private static final int LOW_BASKET_FOREARM_TICKS = 300;
+    private static final int LOW_BASKET_FOREARM_TICKS = -300;
     private static final int PICKUP_SHOULDER_TICKS = 0;
     private static final int PICKUP_FOREARM_TICKS = -300;
 
@@ -68,9 +68,10 @@ public class AutoRedAdway extends LinearOpMode {
         telemetry.addData("Status", "Delivering Sample to Basket...");
         telemetry.update();
 
-        moveToPosition(-8);                              // Short backward adjustment
-        turnRight(90);                                    // Turn to align with basket
-        moveToPosition(28);                               // Approach low basket
+        moveToPosition(35);                              // Short backward adjustment
+        turnRight(95);// Turn to align with basket
+        turnRight(32);
+        moveToPosition(340);                               // Approach low basket
         armMovement.moveArmToPosition(LOW_BASKET_SHOULDER_TICKS, LOW_BASKET_FOREARM_TICKS);  // Adjust arm for Low Basket
         armMovement.openGripper();                       // Release sample
         armMovement.resetArmPosition();                  // Reset arm for safe navigation

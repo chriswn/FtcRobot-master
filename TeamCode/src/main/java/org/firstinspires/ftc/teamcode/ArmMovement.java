@@ -23,8 +23,6 @@ public class ArmMovement {
     private static final int FOREARM_MIN_TICKS = -100;
     private static final int FOREARM_MAX_TICKS = 500;
 
-    private static final double TICKS_PER_REVOLUTION = 1440.0;
-    private static final double MOTOR_POWER = 2.0;
     private static final double TIMEOUT_SECONDS = 5.0;
 
     private Telemetry telemetry;
@@ -47,41 +45,21 @@ public class ArmMovement {
     }
 
     public void moveArmToPosition(int shoulderTicks, int forearmTicks) {
-        double shoulderModifier = 1.0;
-        double forearmModifier = 1.0;
-
         shoulderTicks = Math.max(SHOULDER_MIN_TICKS, Math.min(SHOULDER_MAX_TICKS, shoulderTicks));
         forearmTicks = Math.max(FOREARM_MIN_TICKS, Math.min(FOREARM_MAX_TICKS, forearmTicks));
 
-        if (shoulderTicks < 0) {
-            shoulderModifier = -1.0;
-        }
-
-        if (forearmTicks < 0) {
-            forearmModifier = -1.0;
-        }
-
-        shoulder.setTargetPosition(shoulder.getCurrentPosition() + shoulderTicks);
-        forearm.setTargetPosition(forearm.getCurrentPosition() + forearmTicks);
+        shoulder.setTargetPosition(shoulderTicks);
+        forearm.setTargetPosition(forearmTicks);
 
         shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         forearm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        shoulder.setPower(MOTOR_POWER * shoulderModifier);
-        forearm.setPower(MOTOR_POWER * forearmModifier);
+        shoulder.setPower(2);  // Increased power for sufficient torque
+        forearm.setPower(5);
 
         waitForMotors(shoulder, forearm);
 
         stopMotors();
-    }
-
-
-    public void moveShoulderToPosition(int ticks) {
-        moveArmToPosition(ticks, 0);
-    }
-
-    public void rotateForearmToAngle(int ticks) {
-        moveArmToPosition(0, ticks);
     }
 
     public void openGripper() {
@@ -99,8 +77,12 @@ public class ArmMovement {
     }
 
     public void resetArmPosition() {
-        moveShoulderToPosition(0);
-        rotateForearmToAngle(0);
+        telemetry.addData("Status", "Resetting Arm Position...");
+        telemetry.update();
+
+        moveArmToPosition(0, 0);  // Move the arm to a neutral position
+        telemetry.addData("Status", "Arm Reset Complete");
+        telemetry.update();
     }
 
     private void waitForMotors(DcMotor... motors) {
@@ -110,12 +92,13 @@ public class ArmMovement {
             for (DcMotor motor : motors) {
                 if (motor.isBusy()) {
                     allIdle = false;
+                    telemetry.addData("Motor", "%s busy at %d ticks", motor.getDeviceName(), motor.getCurrentPosition());
                 }
             }
-            if (allIdle) break;
-
-            telemetry.addData("Shoulder Position", shoulder.getCurrentPosition());
-            telemetry.addData("Forearm Position", forearm.getCurrentPosition());
+            if (allIdle) {
+                telemetry.addData("Motors", "All motors idle");
+                break;
+            }
             telemetry.update();
         }
     }

@@ -12,7 +12,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 public class forearm extends LinearOpMode {
     private DcMotor forearm;
     private static final double TICKS_PER_REVOLUTION = 1440.0;
-    private static final double MOTOR_POWER = 1;           // Motor power level
+    private static final double MOTOR_POWER = 5;           // Motor power level
 
     @Override
     public void runOpMode() throws InterruptedException {
