@@ -13,7 +13,7 @@ public class AutoRedAdway extends LinearOpMode {
 
     // Calibrated positions for specific tasks
     private static final int LOW_BASKET_SHOULDER_TICKS = 2374;
-    private static final int LOW_BASKET_FOREARM_TICKS = -300;
+    private static final int LOW_BASKET_FOREARM_TICKS = -400;
     private static final int PICKUP_SHOULDER_TICKS = 0;
     private static final int PICKUP_FOREARM_TICKS = -300;
 
@@ -25,14 +25,15 @@ public class AutoRedAdway extends LinearOpMode {
 
         telemetry.addData("Status", "Initializing...");
         telemetry.update();
-
-        preloadSetup();  // Preload the sample before match start
+        armMovement.closeGripper();
+        armMovement.moveArmToPosition(0,100);
         waitForStart();
         runtime.reset();
 
         if (opModeIsActive()) {
             telemetry.addData("Status", "Starting Autonomous...");
             telemetry.update();
+            preloadSetup();  // Preload the sample before match start
             performAutonomousRoutine();
         }
 
@@ -41,6 +42,9 @@ public class AutoRedAdway extends LinearOpMode {
     }
 
     private void preloadSetup() {
+        moveToPosition(35);
+        turnRight(90); // Turn to face the basket
+        moveToPosition(25);
         telemetry.addData("Status", "Preloading Sample...");
         telemetry.update();
         armMovement.closeGripper();  // Secure preloaded sample
@@ -77,7 +81,7 @@ public class AutoRedAdway extends LinearOpMode {
         sleep(500);
 
         armMovement.moveArmToPosition(LOW_BASKET_FOREARM_TICKS,LOW_BASKET_SHOULDER_TICKS);
-        sleep(500);
+        sleep(1500);
         armMovement.openGripper();  // Drop the sample
         sleep(500);
         armMovement.resetArmPosition();

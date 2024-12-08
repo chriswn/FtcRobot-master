@@ -46,7 +46,7 @@ public class ArmMovement {
 
     public void moveArmToPosition(int shoulderTicks, int forearmTicks) {
         // Pre-move calibration to address play
-        calibrateMotor(forearm, 50);
+        //calibrateMotor(forearm, 50);
 
         shoulderTicks = Math.max(SHOULDER_MIN_TICKS, Math.min(SHOULDER_MAX_TICKS, shoulderTicks));
         forearmTicks = Math.max(FOREARM_MIN_TICKS, Math.min(FOREARM_MAX_TICKS, forearmTicks));
@@ -58,14 +58,15 @@ public class ArmMovement {
         forearm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         shoulder.setPower(0.8);
-        forearm.setPower(0.8);
+        forearm.setPower(1);
 
         waitForMotors(shoulder, forearm);
-        retryIfNotReached(shoulder, shoulderTicks);
-        retryIfNotReached(forearm, forearmTicks);
+       // retryIfNotReached(shoulder, shoulderTicks);
+       // retryIfNotReached(forearm, forearmTicks);
 
         stopMotors();
     }
+
 
     private void calibrateMotor(DcMotor motor, int reverseTicks) {
         motor.setTargetPosition(motor.getCurrentPosition() - reverseTicks);

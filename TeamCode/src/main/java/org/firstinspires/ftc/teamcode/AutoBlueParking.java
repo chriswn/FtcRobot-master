@@ -11,7 +11,7 @@ public class AutoBlueParking extends LinearOpMode {
     private ElapsedTime runtime;
 
     // Distance to Blue Parking Zone in inches
-    private static final double BLUE_PARK_DISTANCE = 24;
+    private static final double BLUE_PARK_DISTANCE = 84;
 
     @Override
     public void runOpMode() {
@@ -50,6 +50,7 @@ public class AutoBlueParking extends LinearOpMode {
      * @param inches Distance to move in inches.
      */
     private void moveToPosition(double inches) {
+        turnRight(90);
         robotHardware.forwardForDistance(inches);
         sleepNonBlocking(500);
     }
@@ -64,5 +65,14 @@ public class AutoBlueParking extends LinearOpMode {
         while (opModeIsActive() && runtime.milliseconds() - startTime < milliseconds) {
             idle();
         }
+    }
+    private void turnRight(int degrees) {
+        robotHardware.turn(degrees, true);
+        sleep(500); // Allow time for the turn to complete
+    }
+
+    private void turnLeft(int degrees) {
+        robotHardware.turn(degrees, false);
+        sleep(500);
     }
 }

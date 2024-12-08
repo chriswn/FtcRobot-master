@@ -35,8 +35,8 @@ public class CombinedMotorControl extends LinearOpMode {
         telemetry.addData("Starting motor movement", "");
         telemetry.update();
 
-        moveMotorToPosition(shoulder, 2374, 2);  // Move the shoulder
-        moveMotorToPosition(forearm, -1000, 0);   // Move the forearm
+        moveMotorToPosition(shoulder, 2310, 0);  // Move the shoulder
+        moveMotorToPosition(forearm, 300, 1);   // Move the forearm
 
         telemetry.addData("Movement completed", "");
         telemetry.update();
