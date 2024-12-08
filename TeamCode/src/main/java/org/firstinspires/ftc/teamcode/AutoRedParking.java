@@ -8,13 +8,16 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 public class AutoRedParking extends LinearOpMode {
 
     private RobotHardware robotHardware;
+    private ElapsedTime runtime;
 
     // Distance to Red Parking Zone in inches
     private static final double RED_PARK_DISTANCE = 24;
 
     @Override
     public void runOpMode() {
+        // Initialize hardware and runtime
         robotHardware = new RobotHardware(hardwareMap, telemetry);
+        runtime = new ElapsedTime();
 
         telemetry.addData("Status", "Initialized");
         telemetry.update();
@@ -43,23 +46,23 @@ public class AutoRedParking extends LinearOpMode {
 
     /**
      * Moves the robot a specified distance forward.
+     *
      * @param inches Distance to move in inches.
      */
     private void moveToPosition(double inches) {
         robotHardware.forwardForDistance(inches);
-        sleep(500); // Allow time for the movement to complete
+        sleepNonBlocking(500);
     }
 
     /**
-     * Adds a delay in milliseconds.
+     * Adds a non-blocking delay.
+     *
      * @param milliseconds Delay duration.
      */
-    private void sleep(int milliseconds) {
-        try {
-            Thread.sleep(milliseconds);
-        } catch (InterruptedException e) {
-            telemetry.addData("Error", "Sleep Interrupted");
-            telemetry.update();
+    private void sleepNonBlocking(int milliseconds) {
+        double startTime = runtime.milliseconds();
+        while (opModeIsActive() && runtime.milliseconds() - startTime < milliseconds) {
+            idle();
         }
     }
 }
