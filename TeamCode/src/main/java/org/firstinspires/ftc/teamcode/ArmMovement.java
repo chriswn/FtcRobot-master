@@ -20,7 +20,7 @@ public class ArmMovement {
 
     private static final int SHOULDER_MIN_TICKS = -500;
     private static final int SHOULDER_MAX_TICKS = 3000;
-    private static final int FOREARM_MIN_TICKS = -100;
+    private static final int FOREARM_MIN_TICKS = -500;
     private static final int FOREARM_MAX_TICKS = 500;
 
     private static final double TIMEOUT_SECONDS = 5.0;

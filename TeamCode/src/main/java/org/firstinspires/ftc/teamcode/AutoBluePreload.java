@@ -12,7 +12,7 @@ public class AutoBluePreload extends LinearOpMode {
 
     // Calibrated positions for preloading tasks
     private static final int PRELOAD_ARM_SHOULDER_TICKS = 1000; // Example position
-    private static final int PRELOAD_ARM_FOREARM_TICKS = -500; // Example position
+    private static final int PRELOAD_ARM_FOREARM_TICKS = -200; // Example position
     private static final double BLUE_PARK_DISTANCE = 24;
 
     @Override
@@ -47,6 +47,11 @@ public class AutoBluePreload extends LinearOpMode {
      * Logic for preloading a sample.
      */
     private void preloadSample() {
+        moveToPosition(35);  // Shortened forward movement
+        turnRight(90);       // Align directly with Low Basket
+        moveToPosition(25);  // Move closer to basket
+        sleep(500);
+
         armMovement.moveArmToPosition(PRELOAD_ARM_SHOULDER_TICKS, PRELOAD_ARM_FOREARM_TICKS);
         armMovement.closeGripper();  // Secure preloaded sample
         sleep(500); // Wait for the gripper to fully close
@@ -84,4 +89,13 @@ public class AutoBluePreload extends LinearOpMode {
             telemetry.update();
         }
     }
+
+    private void turnRight(int degrees) {
+        robotHardware.turn(degrees, true);
+        sleep(500); // Allow time for the turn to complete
+    }
+
+    private void turnLeft(int degrees) {
+        robotHardware.turn(degrees, false);
+        sleep(500);
 }
