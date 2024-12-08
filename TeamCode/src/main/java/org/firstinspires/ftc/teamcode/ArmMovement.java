@@ -45,6 +45,9 @@ public class ArmMovement {
     }
 
     public void moveArmToPosition(int shoulderTicks, int forearmTicks) {
+        // Pre-move calibration to address play
+        calibrateMotor(forearm, 50);
+
         shoulderTicks = Math.max(SHOULDER_MIN_TICKS, Math.min(SHOULDER_MAX_TICKS, shoulderTicks));
         forearmTicks = Math.max(FOREARM_MIN_TICKS, Math.min(FOREARM_MAX_TICKS, forearmTicks));
 
@@ -54,12 +57,34 @@ public class ArmMovement {
         shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         forearm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        shoulder.setPower(5);  // Increased power for sufficient torque
-        forearm.setPower(10);
+        shoulder.setPower(0.8);
+        forearm.setPower(0.8);
 
         waitForMotors(shoulder, forearm);
+        retryIfNotReached(shoulder, shoulderTicks);
+        retryIfNotReached(forearm, forearmTicks);
 
         stopMotors();
+    }
+
+    private void calibrateMotor(DcMotor motor, int reverseTicks) {
+        motor.setTargetPosition(motor.getCurrentPosition() - reverseTicks);
+        motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        motor.setPower(0.3);
+        while (motor.isBusy()) {
+            telemetry.addData("Calibration", "Calibrating %s", motor.getDeviceName());
+            telemetry.update();
+        }
+    }
+
+    private void retryIfNotReached(DcMotor motor, int targetTicks) {
+        if (Math.abs(motor.getCurrentPosition() - targetTicks) > 10) {
+            telemetry.addData("Retry", "Retrying %s to reach target", motor.getDeviceName());
+            telemetry.update();
+            motor.setTargetPosition(targetTicks);
+            motor.setPower(1.0);
+            waitForMotors(motor);
+        }
     }
 
     public void openGripper() {
@@ -95,10 +120,7 @@ public class ArmMovement {
                     telemetry.addData("Motor", "%s busy at %d ticks", motor.getDeviceName(), motor.getCurrentPosition());
                 }
             }
-            if (allIdle) {
-                telemetry.addData("Motors", "All motors idle");
-                break;
-            }
+            if (allIdle) break;
             telemetry.update();
         }
     }
