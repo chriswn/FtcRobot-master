@@ -13,7 +13,7 @@ public class AutoRedAdway extends LinearOpMode {
 
     // Calibrated positions for specific tasks
     private static final int LOW_BASKET_SHOULDER_TICKS = 2374;
-    private static final int LOW_BASKET_FOREARM_TICKS = -300;
+    private static final int LOW_BASKET_FOREARM_TICKS = -500;
     private static final int PICKUP_SHOULDER_TICKS = 0;
     private static final int PICKUP_FOREARM_TICKS = -300;
 
@@ -27,7 +27,7 @@ public class AutoRedAdway extends LinearOpMode {
         telemetry.update();
 
         preloadSetup();  // Preload the sample before match start
-        armMovement.moveArmToPosition(100, 50);  // Adjust the second value as appropriate
+        armMovement.moveArmToPosition(100, 500);  // Adjust the second value as appropriate
         sleep(500); // Allow some time for the arm adjustment
         waitForStart();
         runtime.reset();
@@ -73,18 +73,14 @@ public class AutoRedAdway extends LinearOpMode {
         telemetry.addData("Status", "Delivering Sample to Basket...");
         telemetry.update();
 
-        moveToPosition(35);
-        sleep(500); // Wait to ensure the robot has stopped
-        turnRight(95);
-        sleep(500);
-        turnRight(32);
-        sleep(500);
-        moveToPosition(97);
+        moveToPosition(35);  // Shortened forward movement
+        turnRight(90);       // Align directly with Low Basket
+        moveToPosition(25);  // Move closer to basket
         sleep(500);
 
         armMovement.moveArmToPosition(LOW_BASKET_SHOULDER_TICKS, LOW_BASKET_FOREARM_TICKS);
         sleep(500);
-        armMovement.openGripper();
+        armMovement.openGripper();  // Drop the sample
         sleep(500);
         armMovement.resetArmPosition();
         sleep(500);
@@ -120,11 +116,9 @@ public class AutoRedAdway extends LinearOpMode {
         telemetry.addData("Status", "Parking in Observation Zone...");
         telemetry.update();
 
-        moveToPosition(-15);
-        sleep(500);
-        turnLeft(90);
-        sleep(500);
-        moveToPosition(24);
+        moveToPosition(-15);  // Reverse
+        turnLeft(90);         // Turn toward observation zone
+        moveToPosition(24);   // Move forward to park
         sleep(500);
     }
 

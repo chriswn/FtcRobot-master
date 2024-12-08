@@ -13,9 +13,9 @@ public class ArmMovement {
     private Servo leftClaw;
     private Servo rightClaw;
 
-    private static final double LEFT_CLAW_OPEN_POSITION = 1.0;
+    private static final double LEFT_CLAW_OPEN_POSITION = 0.8;
     private static final double LEFT_CLAW_CLOSED_POSITION = 0.1;
-    private static final double RIGHT_CLAW_OPEN_POSITION = 0.1;
+    private static final double RIGHT_CLAW_OPEN_POSITION = 0.3;
     private static final double RIGHT_CLAW_CLOSED_POSITION = 1.0;
 
     private static final int SHOULDER_MIN_TICKS = -500;
@@ -55,7 +55,7 @@ public class ArmMovement {
         forearm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         shoulder.setPower(5);  // Increased power for sufficient torque
-        forearm.setPower(5);
+        forearm.setPower(10);
 
         waitForMotors(shoulder, forearm);
 
